@@ -173,7 +173,7 @@ class User(object):
         temp1 = para.sys.curve.add_points(temp1, U)
         right = para.sys.curve.add_points(temp1, TAG)
         if right != left:
-            print("ERROR")
+            print("ERROR")  #signature verification or cross-domain tag verification fails
             return
         mark = para.sys.H4(B, TAG, W)
         c = ''
@@ -219,6 +219,7 @@ class User(object):
         else:
             print("Verification failed, please verify message one by one.")
             return
+
 
 
 
