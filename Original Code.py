@@ -72,7 +72,7 @@ class KGC(object):
         return int(h.hexdigest(), 16) % self.q
 
     def _partial_key_compute(self, RID, X):
-        period = '20241231'
+        period = '20251231'
         temp = self.curve.scalar_multiplication(self.__msk, X)
         h_s_1 = self.H1(period, self.P_pub, temp)
         PID = str_xor(RID, h_s_1)
@@ -96,6 +96,8 @@ class User(object):
         self.ppk = para.sys.curve.scalar_multiplication(self.psk, para.sys.P)
         self.u = randbits(256) % para.sys.q
         self.U = para.sys.curve.scalar_multiplication(self.u, para.sys.P)
+        self.Tag = randbits(256) % para.sys.q
+        self.TAG = para.sys.curve.scalar_multiplication(self.Tag, para.sys.P)
 
     def full_key_compute(self, para, partial_key):
         period = partial_key[1]
@@ -151,8 +153,8 @@ class User(object):
             s += val
         T = str(datetime.now())
         h_s = para.sys.H5(self.PID, self.fpk[0], self.fpk[1], s, self.U, T)
-        val = self.u + h_s * (self.fsk[0] + self.fsk[1])
-        return (self.PID, val, C, self.U, T)
+        val = self.u + h_s * (self.fsk[0] + self.fsk[1]) + self.Tag
+        return (self.PID, val, C, self.U,self.TAG, T)
 
     def one_to_many_unsigncrypt(self, Ciphertext, para, fpk):
         U = Ciphertext[3]
@@ -171,7 +173,7 @@ class User(object):
         if right != left:
             print("ERROR")
             return
-        mark = para.sys.H4(B, U, W)
+        mark = para.sys.H4(B, TAG, W)
         c = ''
         for element in Ciphertext[2]:
             if mark == element[:para.sys.msg_length]:
@@ -213,5 +215,6 @@ class User(object):
         else:
             print("Verification failed, please verify message one by one.")
             return
+
 
 
